@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct fpmApp: App {
     var body: some Scene {
-        WindowGroup {
+        WindowGroup("Forward Port Management") {
             ContentView()
         }
     }

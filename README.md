@@ -23,9 +23,13 @@ https://github.com/user-attachments/assets/cf4eb91a-4417-4c2c-8cb1-e0213e07312b
 1. **Download:** Get the latest `.zip` from [Releases](https://github.com/nguyenvuongnamhuy/forward-port-management/releases).
 2. **Setup:** Unzip and drag to **Applications**.
 3. **Permissions (Required):**
+   > **Note:** These permissions are required because the app executes system commands.
    - **System Settings > Privacy > Developer Tools**: Enable for FPM.
    - **System Settings > Privacy > Full Disk Access**: Enable for FPM.
-4. **Open:** Right-click and select "Open" for the first time.
+4. **Command-line Tools Setup:**
+   > **Important:** Commands like `gcloud`, `alloydb-auth-proxy`, `cloud-sql-proxy`, etc., should be moved out of Downloads/Documents folders.
+   > **Recommended:** Install via Homebrew for automatic management, or place binaries in `/usr/local/bin` for system-wide access.
+5. **Open:** Right-click and select "Open" for the first time.
 
 ---
 
@@ -35,8 +39,15 @@ https://github.com/user-attachments/assets/cf4eb91a-4417-4c2c-8cb1-e0213e07312b
 2. **Xcode Config (Signing & Capabilities):**
    - **Remove App Sandbox**
    - **Remove Hardened Runtime**
-3. **Permissions:** Grant **Developer Tools** & **Full Disk Access** for the build version.
-4. **Build:** Press `Cmd + R`.
+3. **Permissions (Required):**
+   > **Note:** These permissions are required because the app executes system commands.
+   - **System Settings > Privacy > Developer Tools**: Enable for FPM.
+   - **System Settings > Privacy > Full Disk Access**: Enable for FPM.
+4. **Command-line Tools Setup:**
+   > **Important:** Commands like `gcloud`, `alloydb-auth-proxy`, `cloud-sql-proxy`, etc., should be moved out of Downloads/Documents folders.
+   >
+   > **Recommended:** Install via Homebrew for automatic management, or place binaries in `/usr/local/bin` for system-wide access.
+5. **Build:** Press `Cmd + R`.
 
 ---
 

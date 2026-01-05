@@ -4,7 +4,7 @@
 
 ---
 
-## 💻 Demonstration
+## 💻 Demonstration (Recorded during the v1.0.0 release)
 
 https://github.com/user-attachments/assets/cf4eb91a-4417-4c2c-8cb1-e0213e07312b
 

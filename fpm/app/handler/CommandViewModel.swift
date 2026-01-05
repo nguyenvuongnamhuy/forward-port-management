@@ -6,6 +6,9 @@ class CommandViewModel: ObservableObject {
     @Published var commands: [CommandItem] = []
     @Published var runningProcesses: [UUID: Process] = [:]
     @Published var logs: [LogEntry] = []
+    @Published var isDarkMode: Bool = false
+    @Published var importCatsSuccess: Bool = false
+    @Published var importCmdsSuccess: Bool = false
     
     func addCategory(name: String) {
         guard !name.isEmpty else { return }
@@ -48,6 +51,20 @@ class CommandViewModel: ObservableObject {
         runningProcesses[cmd.id]?.terminate()
         commands.removeAll { $0.id == cmd.id }
         saveAllData()
+    }
+    
+    func moveCommand(_ cmd: CommandItem, direction: Int) {
+        let filteredCmds = commands.filter { $0.categoryId == cmd.categoryId }
+        guard let currentIndex = filteredCmds.firstIndex(where: { $0.id == cmd.id }) else { return }
+        
+        let newIndex = currentIndex + direction
+        if newIndex >= 0 && newIndex < filteredCmds.count {
+            if let oldIndex = commands.firstIndex(where: { $0.id == cmd.id }),
+               let swapIndex = commands.firstIndex(where: { $0.id == filteredCmds[newIndex].id }) {
+                commands.swapAt(oldIndex, swapIndex)
+                saveAllData()
+            }
+        }
     }
     
     func handleToggle(item: CommandItem, isOn: Bool, forceKill: Bool = false) {
@@ -204,6 +221,107 @@ class CommandViewModel: ObservableObject {
         if let cmdsData = try? Data(contentsOf: cmdsURL),
            let decodedCmds = try? decoder.decode([CommandItem].self, from: cmdsData) {
             commands = decodedCmds
+        }
+        
+        // Load settings
+        loadSettings()
+    }
+    
+    func importConfig(from folderURL: URL) {
+        let decoder = JSONDecoder()
+        
+        importCatsSuccess = false
+        importCmdsSuccess = false
+        
+        let catsURL = folderURL.appendingPathComponent("categories.json")
+        do {
+            if let catsData = try? Data(contentsOf: catsURL) {
+                let decodedCats = try decoder.decode([CategoryItem].self, from: catsData)
+                categories = decodedCats
+                appendLog(name: "Import", msg: "✅ Categories imported successfully.", isErr: false)
+                importCatsSuccess = true
+            } else {
+                appendLog(name: "Import", msg: "⚠️ categories.json not found", isErr: true)
+                importCatsSuccess = false
+            }
+        } catch {
+            appendLog(name: "Import", msg: "❌ Categories import failed: \(error.localizedDescription)", isErr: true)
+            importCatsSuccess = false
+        }
+        
+        let cmdsURL = folderURL.appendingPathComponent("commands.json")
+        do {
+            if let cmdsData = try? Data(contentsOf: cmdsURL) {
+                let decodedCmds = try decoder.decode([CommandItem].self, from: cmdsData)
+                commands = decodedCmds
+                appendLog(name: "Import", msg: "✅ Commands imported successfully.", isErr: false)
+                importCmdsSuccess = true
+            } else {
+                appendLog(name: "Import", msg: "⚠️ commands.json not found", isErr: true)
+                importCmdsSuccess = false
+            }
+        } catch {
+            appendLog(name: "Import", msg: "❌ Commands import failed: \(error.localizedDescription)", isErr: true)
+            importCmdsSuccess = false
+        }
+        
+        if importCatsSuccess && importCmdsSuccess {
+            saveAllData()
+        }
+    }
+    
+    func exportConfig(to folderURL: URL) {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        
+        // Create backup folder
+        let backupFolderURL = folderURL.appendingPathComponent("backup")
+        do {
+            try FileManager.default.createDirectory(at: backupFolderURL, withIntermediateDirectories: true)
+        } catch {
+            appendLog(name: "Export", msg: "❌ Failed to create backup folder: \(error.localizedDescription)", isErr: true)
+            return
+        }
+        
+        // Export categories.json
+        do {
+            let catsData = try encoder.encode(categories)
+            let catsURL = backupFolderURL.appendingPathComponent("categories.json")
+            try catsData.write(to: catsURL)
+            appendLog(name: "Export", msg: "✅ Categories exported successfully.", isErr: false)
+        } catch {
+            appendLog(name: "Export", msg: "❌ Categories export failed: \(error.localizedDescription)", isErr: true)
+        }
+        
+        // Export commands.json
+        do {
+            let cmdsData = try encoder.encode(commands)
+            let cmdsURL = backupFolderURL.appendingPathComponent("commands.json")
+            try cmdsData.write(to: cmdsURL)
+            appendLog(name: "Export", msg: "✅ Commands exported successfully.", isErr: false)
+        } catch {
+            appendLog(name: "Export", msg: "❌ Commands export failed: \(error.localizedDescription)", isErr: true)
+        }
+    }
+    
+    func saveSettings() {
+        let folderURL = getURL()
+        let settingsURL = folderURL.appendingPathComponent("settings.json")
+        
+        let settings = ["isDarkMode": isDarkMode]
+        if let encoded = try? JSONSerialization.data(withJSONObject: settings) {
+            try? encoded.write(to: settingsURL)
+        }
+    }
+    
+    private func loadSettings() {
+        let folderURL = getURL()
+        let settingsURL = folderURL.appendingPathComponent("settings.json")
+        
+        if let data = try? Data(contentsOf: settingsURL),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let darkMode = json["isDarkMode"] as? Bool {
+            isDarkMode = darkMode
         }
     }
 }

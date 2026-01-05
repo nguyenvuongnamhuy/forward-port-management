@@ -13,6 +13,8 @@ struct fpmApp: App {
         WindowGroup("Forward Port Management") {
             ContentView()
         }
+        .windowResizability(.contentSize)
+        .defaultSize(width: Constant.appWidth, height: Constant.appHeight)
     }
 }
 

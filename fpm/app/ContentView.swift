@@ -10,17 +10,19 @@ struct ContentView: View {
             HStack(spacing: 0) {
                 Spacer()
                 HStack(spacing: 20) {
-                    TabButton(title: "Category", icon: "folder.badge.plus", index: 0, currentTab: $currentTab)
-                    TabButton(title: "Setting", icon: "gearshape", index: 1, currentTab: $currentTab)
-                    TabButton(title: "Control Panel", icon: "slider.horizontal.3", index: 2, currentTab: $currentTab)
+                    TabButton(title: "Setting", icon: "gear", index: 0, currentTab: $currentTab)
+                    TabButton(title: "Category", icon: "folder.badge.plus", index: 1, currentTab: $currentTab)
+                    TabButton(title: "Command", icon: "terminal", index: 2, currentTab: $currentTab)
+                    TabButton(title: "Control Panel", icon: "slider.horizontal.3", index: 3, currentTab: $currentTab)
                 }
                 Spacer()
             }
             .background(Color(NSColor.windowBackgroundColor)).frame(height: 60)
             Divider()
             ZStack {
-                if currentTab == 0 { CategoryTabView(vm: vm, focusedField: $focusedField) }
-                else if currentTab == 1 { CommandTabView(vm: vm, focusedField: $focusedField) }
+                if currentTab == 0 { SettingTabView(vm: vm, currentTab: $currentTab) }
+                else if currentTab == 1 { CategoryTabView(vm: vm, focusedField: $focusedField) }
+                else if currentTab == 2 { CommandTabView(vm: vm, focusedField: $focusedField) }
                 else { ControlPanelTabView(vm: vm) }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -28,6 +30,7 @@ struct ContentView: View {
             .onTapGesture { focusedField = nil; NSApp.keyWindow?.makeFirstResponder(nil) }
         }
         .frame(width: Constant.appWidth, height: Constant.appHeight)
+        .preferredColorScheme(vm.isDarkMode ? .dark : .light)
         .onAppear { vm.loadAllData() }
     }
 }

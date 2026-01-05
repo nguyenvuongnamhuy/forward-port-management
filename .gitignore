@@ -3,4 +3,6 @@ DerivedData/
 *.xcuserstate
 project.xcworkspace/
 xcuserdata/
+
 archive/
+backup/

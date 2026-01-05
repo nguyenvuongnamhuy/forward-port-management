@@ -10,6 +10,7 @@ struct CommandItem: Identifiable, Codable {
     var name: String
     var command: String
     var categoryId: UUID
+    var forceKill: Bool = false
 }
 
 struct LogEntry: Identifiable {

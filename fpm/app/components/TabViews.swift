@@ -72,11 +72,26 @@ struct CommandTabView: View {
 // --- TAB 3 ---
 struct ControlPanelTabView: View {
     @ObservedObject var vm: CommandViewModel
+    @State private var forceKillAll = false
+    
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 20) {
-                    Text("Controller").font(.headline).padding()
+                    Text("Controller").font(.headline).padding(.top)
+                    VStack(spacing: 12) {
+                        Toggle(isOn: $forceKillAll) {
+                            HStack(spacing: 4) {
+                                Text("Force Kill")
+                                Image(systemName: "questionmark.circle")
+                                    .foregroundColor(.secondary)
+                                    .font(.system(size: 11))
+                                    .help("When enabled, the app will forcefully terminate any existing process using the specified port before starting the new connection.\nNote: Only enable this if you encounter a port conflict, this avoids unnecessary checks and prevents potential lag or delays.")
+                            }
+                        }
+                        .toggleStyle(CheckboxToggleStyle())
+                        .font(.system(size: 12))
+                    }.padding(.horizontal)
                     ForEach(vm.categories) { cat in
                         VStack(alignment: .leading, spacing: 8) {
                             Text(cat.name.uppercased()).font(.caption2).bold().foregroundColor(.secondary).padding(.leading, 5)
@@ -85,8 +100,10 @@ struct ControlPanelTabView: View {
                                 if filteredCmds.isEmpty {
                                     HStack { Text("Not any command yet").font(.caption).foregroundColor(.gray).padding(); Spacer() }
                                 } else {
+                                    let lastId = filteredCmds.last?.id
                                     ForEach(filteredCmds) { item in
-                                        ControlRowView(item: item, vm: vm, isLast: item.id == filteredCmds.last?.id)
+                                        let isLast = item.id == lastId
+                                        ControlRowView(item: item, vm: vm, forceKillAll: forceKillAll, isLast: isLast)
                                     }
                                 }
                             }
@@ -104,7 +121,9 @@ struct ControlPanelTabView: View {
 struct ControlRowView: View {
     let item: CommandItem
     @ObservedObject var vm: CommandViewModel
+    let forceKillAll: Bool
     let isLast: Bool
+    
     var body: some View {
         VStack(spacing: 0) {
             HStack {
@@ -115,7 +134,7 @@ struct ControlRowView: View {
                 Spacer()
                 Toggle("", isOn: Binding(
                     get: { vm.runningProcesses[item.id] != nil },
-                    set: { vm.handleToggle(item: item, isOn: $0) }
+                    set: { vm.handleToggle(item: item, isOn: $0, forceKill: forceKillAll) }
                 )).toggleStyle(SwitchToggleStyle(tint: .green)).labelsHidden()
             }
             .padding(.horizontal).padding(.vertical, 10)
@@ -161,6 +180,21 @@ struct LogAreaView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+struct CheckboxToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
+                .foregroundColor(configuration.isOn ? .blue : .gray)
+                .font(.system(size: 14))
+            configuration.label
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            configuration.isOn.toggle()
         }
     }
 }

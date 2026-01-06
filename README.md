@@ -24,7 +24,7 @@ https://github.com/user-attachments/assets/cf4eb91a-4417-4c2c-8cb1-e0213e07312b
 
 ## 📥 Installation (End-Users)
 
-1. **Download:** Get the latest `.zip` from [Releases](https://github.com/nguyenvuongnamhuy/forward-port-management/releases).
+1. **Download:** Get the latest `fpm.zip` from [Releases](https://github.com/nguyenvuongnamhuy/forward-port-management/releases).
 2. **Setup:** Unzip and drag to **Applications**.
 3. **Permissions (Required):**
    > **Note:** These permissions are required because the app executes system commands.

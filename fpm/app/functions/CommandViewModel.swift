@@ -68,6 +68,8 @@ class CommandViewModel: ObservableObject {
     }
     
     func handleToggle(item: CommandItem, isOn: Bool, forceKill: Bool = false) {
+        let catName = categories.first { $0.id == item.categoryId }?.name ?? "Unknown"
+        
         if isOn {
             if forceKill {
                 killExistingPort(for: item)
@@ -98,6 +100,7 @@ class CommandViewModel: ObservableObject {
                 let data = handle.availableData
                 if let str = String(data: data, encoding: .utf8), !str.isEmpty {
                     self.appendLog(
+                        categoryName: catName,
                         name: item.name,
                         msg: str.trimmingCharacters(in: .newlines)
                     )
@@ -109,9 +112,9 @@ class CommandViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     let status = p.terminationStatus
                     if status != 0 && self.runningProcesses[item.id] != nil {
-                        self.appendLog(name: item.name, msg: "⚠️ Something went wrong (Code: \(status))")
+                        self.appendLog(categoryName: catName, name: item.name, msg: "⚠️ Something went wrong (Code: \(status))")
                     } else {
-                        self.appendLog(name: item.name, msg: "✅ Stopped connection.")
+                        self.appendLog(categoryName: catName, name: item.name, msg: "✅ Stopped connection.")
                     }
                     
                     self.runningProcesses.removeValue(forKey: item.id)
@@ -121,12 +124,12 @@ class CommandViewModel: ObservableObject {
             
             // Execute
             runningProcesses[item.id] = task
-            appendLog(name: item.name, msg: "🌐 Creating Tunnel Port...")
+            appendLog(categoryName: catName, name: item.name, msg: "🌐 Creating Tunnel Port...")
             
             do {
                 try task.run()
             } catch {
-                appendLog(name: item.name, msg: "❌ Running error: \(error.localizedDescription)")
+                appendLog(categoryName: catName, name: item.name, msg: "❌ Running error: \(error.localizedDescription)")
                 runningProcesses.removeValue(forKey: item.id)
             }
             
@@ -134,7 +137,7 @@ class CommandViewModel: ObservableObject {
             // Stop main process
             if let task = runningProcesses[item.id] {
                 task.terminate()
-                appendLog(name: item.name, msg: "🛑 Request cancelled.")
+                appendLog(categoryName: catName, name: item.name, msg: "🛑 Request cancelled.")
             }
             
             // stop sub-process
@@ -150,7 +153,8 @@ class CommandViewModel: ObservableObject {
     }
     
     private func killExistingPort(for item: CommandItem) {
-        appendLog(name: item.name, msg: "🔧 Force killing existing processes...")
+        let catName = categories.first { $0.id == item.categoryId }?.name ?? "Unknown"
+        appendLog(categoryName: catName, name: item.name, msg: "🔧 Force killing existing processes...")
         
         let taskToKill = Process()
         taskToKill.executableURL = URL(fileURLWithPath: "/usr/bin/pkill")
@@ -162,12 +166,13 @@ class CommandViewModel: ObservableObject {
         // Wait a moment to ensure the port is released
         Thread.sleep(forTimeInterval: 0.5)
         
-        appendLog(name: item.name, msg: "✅ Existing processes killed.")
+        appendLog(categoryName: catName, name: item.name, msg: "✅ Existing processes killed.")
     }
     
-    func appendLog(name: String, msg: String, isErr: Bool = false) {
+    func appendLog(categoryName: String, name: String, msg: String, isErr: Bool = false) {
         DispatchQueue.main.async {
             let newEntry = LogEntry(
+                categoryName: categoryName,
                 serverName: name,
                 message: msg,
                 isError: isErr
@@ -238,14 +243,14 @@ class CommandViewModel: ObservableObject {
             if let catsData = try? Data(contentsOf: catsURL) {
                 let decodedCats = try decoder.decode([CategoryItem].self, from: catsData)
                 categories = decodedCats
-                appendLog(name: "Import", msg: "✅ Categories imported successfully.", isErr: false)
+                appendLog(categoryName: "System", name: "Import", msg: "✅ Categories imported successfully.", isErr: false)
                 importCatsSuccess = true
             } else {
-                appendLog(name: "Import", msg: "⚠️ categories.json not found", isErr: true)
+                appendLog(categoryName: "System", name: "Import", msg: "⚠️ categories.json not found", isErr: true)
                 importCatsSuccess = false
             }
         } catch {
-            appendLog(name: "Import", msg: "❌ Categories import failed: \(error.localizedDescription)", isErr: true)
+            appendLog(categoryName: "System", name: "Import", msg: "❌ Categories import failed: \(error.localizedDescription)", isErr: true)
             importCatsSuccess = false
         }
         
@@ -254,14 +259,14 @@ class CommandViewModel: ObservableObject {
             if let cmdsData = try? Data(contentsOf: cmdsURL) {
                 let decodedCmds = try decoder.decode([CommandItem].self, from: cmdsData)
                 commands = decodedCmds
-                appendLog(name: "Import", msg: "✅ Commands imported successfully.", isErr: false)
+                appendLog(categoryName: "System", name: "Import", msg: "✅ Commands imported successfully.", isErr: false)
                 importCmdsSuccess = true
             } else {
-                appendLog(name: "Import", msg: "⚠️ commands.json not found", isErr: true)
+                appendLog(categoryName: "System", name: "Import", msg: "⚠️ commands.json not found", isErr: true)
                 importCmdsSuccess = false
             }
         } catch {
-            appendLog(name: "Import", msg: "❌ Commands import failed: \(error.localizedDescription)", isErr: true)
+            appendLog(categoryName: "System", name: "Import", msg: "❌ Commands import failed: \(error.localizedDescription)", isErr: true)
             importCmdsSuccess = false
         }
         
@@ -279,7 +284,7 @@ class CommandViewModel: ObservableObject {
         do {
             try FileManager.default.createDirectory(at: backupFolderURL, withIntermediateDirectories: true)
         } catch {
-            appendLog(name: "Export", msg: "❌ Failed to create backup folder: \(error.localizedDescription)", isErr: true)
+            appendLog(categoryName: "System", name: "Export", msg: "❌ Failed to create backup folder: \(error.localizedDescription)", isErr: true)
             return
         }
         
@@ -288,9 +293,9 @@ class CommandViewModel: ObservableObject {
             let catsData = try encoder.encode(categories)
             let catsURL = backupFolderURL.appendingPathComponent("categories.json")
             try catsData.write(to: catsURL)
-            appendLog(name: "Export", msg: "✅ Categories exported successfully.", isErr: false)
+            appendLog(categoryName: "System", name: "Export", msg: "✅ Categories exported successfully.", isErr: false)
         } catch {
-            appendLog(name: "Export", msg: "❌ Categories export failed: \(error.localizedDescription)", isErr: true)
+            appendLog(categoryName: "System", name: "Export", msg: "❌ Categories export failed: \(error.localizedDescription)", isErr: true)
         }
         
         // Export commands.json
@@ -298,9 +303,9 @@ class CommandViewModel: ObservableObject {
             let cmdsData = try encoder.encode(commands)
             let cmdsURL = backupFolderURL.appendingPathComponent("commands.json")
             try cmdsData.write(to: cmdsURL)
-            appendLog(name: "Export", msg: "✅ Commands exported successfully.", isErr: false)
+            appendLog(categoryName: "System", name: "Export", msg: "✅ Commands exported successfully.", isErr: false)
         } catch {
-            appendLog(name: "Export", msg: "❌ Commands export failed: \(error.localizedDescription)", isErr: true)
+            appendLog(categoryName: "System", name: "Export", msg: "❌ Commands export failed: \(error.localizedDescription)", isErr: true)
         }
     }
     

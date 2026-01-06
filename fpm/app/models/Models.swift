@@ -16,6 +16,7 @@ struct CommandItem: Identifiable, Codable {
 struct LogEntry: Identifiable {
     let id = UUID()
     let timestamp = Date()
+    let categoryName: String
     let serverName: String
     let message: String
     let isError: Bool

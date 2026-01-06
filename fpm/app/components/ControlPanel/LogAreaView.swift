@@ -17,13 +17,16 @@ struct LogAreaView: View {
             Divider()
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 8) {
                         ForEach(vm.logs) { log in
-                            HStack(alignment: .top, spacing: 6) {
-                                Text(log.timestamp, style: .time).foregroundColor(.secondary).frame(width: 50, alignment: .leading)
-                                Text("[\(log.serverName)]").bold().foregroundColor(log.isError ? .red : .blue)
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text(log.timestamp, style: .time).foregroundColor(.secondary).frame(width: 50, alignment: .leading)
+                                    Text("[\(log.categoryName)]").bold().foregroundColor(.blue)
+                                    Text("[\(log.serverName)]").bold().foregroundColor(log.isError ? .red : .green)
+                                    Spacer()
+                                }
                                 Text(log.message).foregroundColor(log.isError ? .red : .primary).fixedSize(horizontal: false, vertical: true)
-                                Spacer()
                             }
                             .font(.system(size: 11, design: .monospaced)).padding(.horizontal, 8).id(log.id)
                         }

@@ -43,7 +43,7 @@ function LogViewer() {
       <div
         ref={listRef}
         style={{
-          height: "calc(100vh - 176px)",
+          height: "calc(100vh - 162px)",
           overflow: "auto",
           paddingBottom: "12px",
         }}

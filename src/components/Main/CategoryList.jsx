@@ -282,7 +282,7 @@ function CategoryList() {
         bodyStyle={{ padding: '0' }}
         className="modern-card"
       >
-        <div style={{ height: 'calc(100vh - 176px)', overflow: 'auto', padding: '12px' }}>
+        <div style={{ height: 'calc(100vh - 155px)', overflow: 'auto', padding: '12px' }}>
         {sortedCategories.length === 0 ? (
           <div style={{ textAlign: "center", padding: "24px", color: "#999", fontSize: 13 }}>
             No categories yet. Click "Add Category" to get started.

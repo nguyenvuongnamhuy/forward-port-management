@@ -17,7 +17,7 @@ function MainTab() {
   }
 
   return (
-    <div style={{ height: "calc(100vh - 96px)", overflow: "hidden" }}>
+    <div style={{ height: "calc(100vh - 100px)", overflow: "hidden" }}>
       <Group orientation="horizontal">
         <Panel defaultSize={58} minSize={400}>
           <div style={{ height: "100%", paddingRight: "6px" }}>

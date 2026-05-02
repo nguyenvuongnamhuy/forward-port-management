@@ -58,11 +58,10 @@ function SettingsTab({ isDarkMode, setIsDarkMode }) {
   };
 
   return (
-    <div style={{ height: "calc(100vh - 96px)", overflow: "auto", padding: "0 6px" }}>
+    <div style={{ height: "calc(100vh - 10px)", padding: "0 6px" }}>
       <Card 
         size="small"
-        style={{ height: "100%" }}
-        bodyStyle={{ padding: '20px' }}
+        bodyStyle={{ padding: '20px', height: 'calc(100vh - 105px)', overflow: 'auto' }}
         className="modern-card"
       >
         <Space direction="vertical" size="large" style={{ width: "100%" }}>

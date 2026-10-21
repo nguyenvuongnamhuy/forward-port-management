@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { registerIpcHandlers } = require("./handlers/ipcHandlers");
+const { createTray, updateTrayTitle } = require("./tray");
+const { onProcessStateChange } = require("./handlers/processHandler");
 
 let mainWindow;
 
@@ -26,6 +28,14 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 
+  // Tray app behavior: closing the window hides it, the app stays in the menu bar
+  mainWindow.on("close", (event) => {
+    if (!app.isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+  });
+
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
@@ -34,12 +44,20 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
   registerIpcHandlers(ipcMain, mainWindow);
+  createTray(mainWindow);
+  onProcessStateChange(updateTrayTitle);
 
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+    } else if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
   });
+});
+
+app.on("before-quit", () => {
+  app.isQuitting = true;
 });
 
 app.on("window-all-closed", () => {

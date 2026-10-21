@@ -6,6 +6,7 @@ A native desktop application for managing and executing port forwarding commands
 
 ## ✨ Features
 
+- **macOS Menu Bar Status Item**: ⇄ icon with live running count — start/stop any command, Stop All, or reopen the app right from the menu bar; closing the window keeps FPM running
 - **2-Tab Interface**: Simplified UI with Control Panel and Settings tabs
 - **Resizable Panels**: Drag to resize Categories and Logs panels (min 40%/30%)
 - **Category Management**: Organize commands by projects with collapse/expand (default collapsed)
@@ -191,6 +192,8 @@ fpm/
 ├── electron/                    # Electron main process
 │   ├── main.js                 # Main process entry
 │   ├── preload.js              # IPC bridge
+│   ├── tray.js                 # macOS menu bar status item
+│   ├── assets/                 # Tray icons (template PNGs + generator)
 │   └── handlers/               # IPC handlers
 │       ├── ipcHandlers.js      # IPC registration
 │       ├── storageHandler.js   # File I/O

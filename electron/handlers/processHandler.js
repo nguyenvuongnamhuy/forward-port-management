@@ -5,6 +5,21 @@ const execPromise = util.promisify(exec);
 // Store running processes
 const runningProcesses = new Map();
 
+// Listeners notified whenever a process starts or stops (e.g. tray title)
+const stateChangeListeners = [];
+
+function onProcessStateChange(listener) {
+  stateChangeListeners.push(listener);
+}
+
+function notifyStateChange() {
+  stateChangeListeners.forEach((listener) => listener());
+}
+
+function getRunningCommandIds() {
+  return Array.from(runningProcesses.keys());
+}
+
 // Send log to renderer
 function sendLog(
   mainWindow,
@@ -109,6 +124,7 @@ async function startCommand(data, mainWindow) {
     // Handle errors FIRST (before storing process)
     childProcess.on("error", (error) => {
       runningProcesses.delete(commandId);
+      notifyStateChange();
       sendLog(
         mainWindow,
         categoryName,
@@ -122,6 +138,7 @@ async function startCommand(data, mainWindow) {
 
     // Store process
     runningProcesses.set(commandId, childProcess);
+    notifyStateChange();
 
     sendLog(
       mainWindow,
@@ -150,6 +167,7 @@ async function startCommand(data, mainWindow) {
     // Handle process exit
     childProcess.on("exit", (code, signal) => {
       runningProcesses.delete(commandId);
+      notifyStateChange();
 
       // Exit code 0, null, 143 (SIGTERM), or SIGTERM signal are normal exits
       const isNormalExit =
@@ -224,6 +242,7 @@ async function stopCommand(commandId, mainWindow) {
 
     // Remove from map
     runningProcesses.delete(commandId);
+    notifyStateChange();
 
     return { success: true };
   } catch (error) {
@@ -235,4 +254,6 @@ async function stopCommand(commandId, mainWindow) {
 module.exports = {
   startCommand,
   stopCommand,
+  getRunningCommandIds,
+  onProcessStateChange,
 };
